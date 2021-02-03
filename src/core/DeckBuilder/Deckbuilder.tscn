@@ -115,6 +115,7 @@ margin_right = 633.0
 margin_bottom = 644.0
 custom_fonts/font = SubResource( 6 )
 text = "New Deck"
+max_length = 128
 
 [node name="Buttons" type="HBoxContainer" parent="VBC/HBC/MC/CurrentDeck"]
 margin_top = 648.0
@@ -157,6 +158,8 @@ margin_bottom = 26.0
 size_flags_horizontal = 3
 
 [node name="FilterButton" parent="VBC/HBC/MC2/AvailableCards/ButtonFilters/CC" instance=ExtResource( 3 )]
+margin_left = 286.0
+margin_right = 341.0
 
 [node name="CardListHeaders" type="HBoxContainer" parent="VBC/HBC/MC2/AvailableCards"]
 margin_top = 61.0
@@ -190,3 +193,6 @@ margin_top = 84.0
 margin_right = 628.0
 margin_bottom = 84.0
 custom_styles/panel = SubResource( 4 )
+
+[connection signal="pressed" from="VBC/HBC/MC/CurrentDeck/Buttons/Save" to="." method="_on_Save_pressed"]
+[connection signal="text_changed" from="VBC/HBC/MC2/AvailableCards/Filter" to="." method="_on_Filter_text_changed"]

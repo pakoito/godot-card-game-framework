@@ -16,6 +16,7 @@ const _DECK_CATEGORY_SCENE = preload(_DECK_CATEGORY_SCENE_FILE)
 
 onready var available_cards = $VBC/HBC/MC2/AvailableCards
 onready var deck_cards = $VBC/HBC/MC/CurrentDeck/CardsInDeck
+onready var deck_name = $VBC/HBC/MC/CurrentDeck/DeckNameEdit
 
 func _ready() -> void:
 	populate_available_cards()
@@ -42,4 +43,24 @@ func add_new_card(card_name, category, value) -> DBDeckCardObject:
 	category_cards_node.add_child(deck_card_object)
 	deck_card_object.setup(card_name, value)
 	return(deck_card_object)
-	
+
+
+func _on_Filter_text_changed(new_text: String) -> void:
+	pass # Replace with function body.
+
+
+func _on_Save_pressed() -> void:
+	var deck_dictionary := {
+		"name": deck_name.text,
+		"cards": {},
+	}
+	for category in deck_cards.get_children():
+		for card_object in category.get_node("CategoryCards").get_children():
+			deck_dictionary.cards[card_object.card_name] = card_object.quantity
+	var dir = Directory.new()
+	if not dir.dir_exists(CFConst.DECKS_PATH):
+		dir.make_dir(CFConst.DECKS_PATH)
+	var file = File.new()
+	file.open(CFConst.DECKS_PATH + deck_name.text + '.json', File.WRITE)
+	file.store_string(JSON.print(deck_dictionary, '\t'))
+	file.close()
