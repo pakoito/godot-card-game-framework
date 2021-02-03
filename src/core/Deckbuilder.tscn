@@ -1,0 +1,196 @@
+[gd_scene load_steps=13 format=2]
+
+[ext_resource path="res://fonts/Xolonium-Regular.ttf" type="DynamicFontData" id=1]
+[ext_resource path="res://fonts/Comfortaa-Bold.ttf" type="DynamicFontData" id=2]
+[ext_resource path="res://src/core/DeckBuilder/FilterButton.tscn" type="PackedScene" id=3]
+[ext_resource path="res://src/core/DeckBuilder/CategoryContainer.tscn" type="PackedScene" id=4]
+[ext_resource path="res://src/core/Deckbuilder.gd" type="Script" id=6]
+
+[sub_resource type="StyleBoxFlat" id=1]
+bg_color = Color( 0.145098, 0.145098, 0.145098, 1 )
+
+[sub_resource type="DynamicFont" id=2]
+size = 30
+outline_size = 2
+outline_color = Color( 0, 0, 0, 1 )
+use_filter = true
+font_data = ExtResource( 1 )
+
+[sub_resource type="DynamicFont" id=3]
+size = 15
+use_filter = true
+font_data = ExtResource( 2 )
+
+[sub_resource type="StyleBoxLine" id=9]
+color = Color( 1, 0.4, 0, 1 )
+thickness = 2
+
+[sub_resource type="DynamicFont" id=4]
+outline_size = 2
+outline_color = Color( 0, 0, 0, 1 )
+use_filter = true
+font_data = ExtResource( 2 )
+
+[sub_resource type="DynamicFont" id=5]
+size = 14
+use_filter = true
+font_data = ExtResource( 2 )
+
+[sub_resource type="DynamicFont" id=6]
+outline_size = 2
+outline_color = Color( 0, 0, 0, 1 )
+use_filter = true
+font_data = ExtResource( 1 )
+
+[node name="DeckBuilder" type="PanelContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+custom_styles/panel = SubResource( 1 )
+script = ExtResource( 6 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="VBC" type="VBoxContainer" parent="."]
+margin_right = 1280.0
+margin_bottom = 720.0
+
+[node name="Title" type="Label" parent="VBC"]
+margin_right = 1280.0
+margin_bottom = 37.0
+custom_fonts/font = SubResource( 2 )
+text = "Deck Builder"
+align = 1
+
+[node name="HBC" type="HBoxContainer" parent="VBC"]
+margin_top = 41.0
+margin_right = 1280.0
+margin_bottom = 720.0
+size_flags_vertical = 3
+
+[node name="MC" type="MarginContainer" parent="VBC/HBC"]
+margin_right = 638.0
+margin_bottom = 679.0
+size_flags_horizontal = 3
+custom_constants/margin_left = 5
+custom_constants/margin_bottom = 5
+
+[node name="CurrentDeck" type="VBoxContainer" parent="VBC/HBC/MC"]
+margin_left = 5.0
+margin_right = 638.0
+margin_bottom = 674.0
+size_flags_horizontal = 3
+
+[node name="DeckDetails" type="VBoxContainer" parent="VBC/HBC/MC/CurrentDeck"]
+margin_right = 633.0
+margin_bottom = 18.0
+
+[node name="CardCount" type="Label" parent="VBC/HBC/MC/CurrentDeck/DeckDetails"]
+margin_right = 633.0
+margin_bottom = 18.0
+custom_fonts/font = SubResource( 3 )
+text = "0 Cards (min 52)"
+
+[node name="LineSeparator2" type="Panel" parent="VBC/HBC/MC/CurrentDeck"]
+margin_top = 22.0
+margin_right = 633.0
+margin_bottom = 22.0
+custom_styles/panel = SubResource( 9 )
+
+[node name="CardsInDeck" type="VBoxContainer" parent="VBC/HBC/MC/CurrentDeck"]
+margin_top = 26.0
+margin_right = 633.0
+margin_bottom = 590.0
+size_flags_vertical = 3
+
+[node name="CategoryContainer" parent="VBC/HBC/MC/CurrentDeck/CardsInDeck" instance=ExtResource( 4 )]
+margin_bottom = 22.0
+
+[node name="DeckNameEditLabel" type="Label" parent="VBC/HBC/MC/CurrentDeck"]
+margin_top = 594.0
+margin_right = 633.0
+margin_bottom = 613.0
+custom_fonts/font = SubResource( 4 )
+text = "Name"
+
+[node name="DeckNameEdit" type="LineEdit" parent="VBC/HBC/MC/CurrentDeck"]
+margin_top = 617.0
+margin_right = 633.0
+margin_bottom = 644.0
+custom_fonts/font = SubResource( 5 )
+text = "New Deck"
+
+[node name="Buttons" type="HBoxContainer" parent="VBC/HBC/MC/CurrentDeck"]
+margin_top = 648.0
+margin_right = 633.0
+margin_bottom = 674.0
+
+[node name="Save" type="Button" parent="VBC/HBC/MC/CurrentDeck/Buttons"]
+margin_right = 54.0
+margin_bottom = 26.0
+custom_fonts/font = SubResource( 6 )
+text = "Save"
+
+[node name="MC2" type="MarginContainer" parent="VBC/HBC"]
+margin_left = 642.0
+margin_right = 1280.0
+margin_bottom = 679.0
+size_flags_horizontal = 3
+custom_constants/margin_right = 10
+custom_constants/margin_bottom = 5
+
+[node name="AvailableCards" type="VBoxContainer" parent="VBC/HBC/MC2"]
+margin_right = 628.0
+margin_bottom = 674.0
+size_flags_horizontal = 3
+
+[node name="Filter" type="LineEdit" parent="VBC/HBC/MC2/AvailableCards"]
+margin_right = 628.0
+margin_bottom = 27.0
+custom_fonts/font = SubResource( 5 )
+text = "Filter the list"
+
+[node name="ButtonFilters" type="HBoxContainer" parent="VBC/HBC/MC2/AvailableCards"]
+margin_top = 31.0
+margin_right = 628.0
+margin_bottom = 57.0
+
+[node name="CC" type="CenterContainer" parent="VBC/HBC/MC2/AvailableCards/ButtonFilters"]
+margin_right = 628.0
+margin_bottom = 26.0
+size_flags_horizontal = 3
+
+[node name="FilterButton" parent="VBC/HBC/MC2/AvailableCards/ButtonFilters/CC" instance=ExtResource( 3 )]
+
+[node name="CardListHeaders" type="HBoxContainer" parent="VBC/HBC/MC2/AvailableCards"]
+margin_top = 61.0
+margin_right = 628.0
+margin_bottom = 80.0
+custom_constants/separation = 60
+
+[node name="Quantity" type="Label" parent="VBC/HBC/MC2/AvailableCards/CardListHeaders"]
+margin_right = 74.0
+margin_bottom = 19.0
+custom_fonts/font = SubResource( 4 )
+text = "Quantity"
+
+[node name="Name" type="Label" parent="VBC/HBC/MC2/AvailableCards/CardListHeaders"]
+margin_left = 134.0
+margin_right = 527.0
+margin_bottom = 19.0
+size_flags_horizontal = 3
+custom_fonts/font = SubResource( 4 )
+text = "Name"
+
+[node name="Type" type="Label" parent="VBC/HBC/MC2/AvailableCards/CardListHeaders"]
+margin_left = 587.0
+margin_right = 628.0
+margin_bottom = 19.0
+custom_fonts/font = SubResource( 4 )
+text = "Type"
+
+[node name="LineSeparator" type="Panel" parent="VBC/HBC/MC2/AvailableCards"]
+margin_top = 84.0
+margin_right = 628.0
+margin_bottom = 84.0
+custom_styles/panel = SubResource( 9 )

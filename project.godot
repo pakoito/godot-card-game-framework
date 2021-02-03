@@ -109,12 +109,12 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://src/core/DeckBuilder/DBCardObject.gd"
 }, {
-"base": "DBCardObject",
+"base": "HBoxContainer",
 "class": "DBDeckCardObject",
 "language": "GDScript",
 "path": "res://src/core/DeckBuilder/DeckCardObject.gd"
 }, {
-"base": "DBCardObject",
+"base": "HBoxContainer",
 "class": "DBListCardObject",
 "language": "GDScript",
 "path": "res://src/core/DeckBuilder/ListCardObject.gd"
@@ -143,6 +143,11 @@ _global_script_classes=[ {
 "class": "Pile",
 "language": "GDScript",
 "path": "res://src/core/Pile.gd"
+}, {
+"base": "Button",
+"class": "QuantityNumberButton",
+"language": "GDScript",
+"path": "res://src/core/DeckBuilder/QuantityNumberButton.gd"
 }, {
 "base": "Reference",
 "class": "SP",
@@ -227,6 +232,7 @@ _global_script_class_icons={
 "ManipulationButtons": "",
 "MousePointer": "",
 "Pile": "",
+"QuantityNumberButton": "",
 "SP": "",
 "ScriptAlter": "",
 "ScriptObject": "",
