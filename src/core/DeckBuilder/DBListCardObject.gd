@@ -1,6 +1,5 @@
 class_name DBListCardObject
 extends HBoxContainer
-signal quantity_changed(value)
 
 var deck_card_object: DBDeckCardObject
 var deckbuilder
@@ -17,6 +16,9 @@ export var quantity_property: String = "_max_allowed"
 
 
 onready var card_label:= $CardLabel
+onready var plus_button := $Quantity/Plus
+onready var minus_button := $Quantity/Minus
+onready var quantity_edit := $Quantity/IntegerLineEdit
 onready var qbuttons = {
 	0: $'Quantity/0',
 	1: $'Quantity/1',
@@ -29,19 +31,26 @@ onready var qbuttons = {
 func _ready() -> void:
 	for quantity_button in qbuttons:
 		qbuttons[quantity_button].connect("quantity_set", self, "_on_quantity_set")
-
-
+	quantity_edit.minimum = 0
+	quantity_edit.connect("int_entered", self, "set_quantity")
 # Setter for quantity
 #
 # Will also set the correct button as pressed
 func set_quantity(value) -> void:
+	if value < 0:
+		value = 0
 	quantity = value
-	emit_signal("quantity_changed", value)
+	if value > max_allowed:
+		return
 	for button in qbuttons:
 		if button == value:
 			qbuttons[button].pressed = true
 		else:
 			qbuttons[button].pressed = false
+	if value:
+		quantity_edit.text = str(value)
+	else:
+		quantity_edit.text = ''
 	if value > 0:
 		if not deck_card_object:
 			deck_card_object = deckbuilder.add_new_card(
@@ -70,10 +79,22 @@ func setup(_card_name: String, count = 0) -> void:
 func setup_max_quantity() -> void:
 	if card_properties.get("_max_allowed",0):
 		 max_allowed = card_properties.get("_max_allowed")
+	quantity_edit.maximum = max_allowed
+	quantity_edit.placeholder_text = \
+			"Max " + str(max_allowed)
 	if max_allowed <= 5:
 		for iter in range(1,max_allowed+1):
 			qbuttons[iter].visible = true
+	else:
+		plus_button.visible = true
+		minus_button.visible = true
+		quantity_edit.visible = true
 
 func _on_quantity_set(value: int) -> void:
 	set_quantity(value)
 
+func _on_Plus_pressed() -> void:
+	set_quantity(quantity + 1)
+
+func _on_Minus_pressed() -> void:
+	set_quantity(quantity - 1)

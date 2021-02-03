@@ -1,8 +1,9 @@
 class_name DBDeckCardObject
 extends HBoxContainer
 
-var quantity: int 
 signal quantity_changed(value)
+
+var quantity: int 
 
 onready var card_label:= $CardLabel
 

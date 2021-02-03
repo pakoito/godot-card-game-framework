@@ -5,10 +5,10 @@ export var max_quantity: int = 3
 # The path to the ListCardObject scene. This has to be defined explicitly
 # here, in order to use it in its preload, otherwise the parser gives an error
 const _LIST_CARD_OBJECT_SCENE_FILE = CFConst.PATH_CORE\
-		+ "/Deckbuilder/ListCardObject.tscn"
+		+ "/Deckbuilder/DBListCardObject.tscn"
 const _LIST_CARD_OBJECT_SCENE = preload(_LIST_CARD_OBJECT_SCENE_FILE)
 const _DECK_CARD_OBJECT_SCENE_FILE = CFConst.PATH_CORE\
-		+ "/Deckbuilder/DeckCardObject.tscn"
+		+ "/Deckbuilder/DBDeckCardObject.tscn"
 const _DECK_CARD_OBJECT_SCENE = preload(_DECK_CARD_OBJECT_SCENE_FILE)
 const _DECK_CATEGORY_SCENE_FILE = CFConst.PATH_CORE\
 		+ "/Deckbuilder/CategoryContainer.tscn"
