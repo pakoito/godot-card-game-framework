@@ -1,66 +1,150 @@
 extends PanelContainer
 
 # The maximum amount of each card allowed in a deck.
+# Individual cards can modify  this
 export var max_quantity: int = 3
+# The minimum amount cards required in a deck
+export var deck_minimum: int = 52
+# The maximum amount cards required in a deck
+export var deck_maximum: int = 60
 # The path to the ListCardObject scene. This has to be defined explicitly
 # here, in order to use it in its preload, otherwise the parser gives an error
 const _LIST_CARD_OBJECT_SCENE_FILE = CFConst.PATH_CORE\
 		+ "/Deckbuilder/DBListCardObject.tscn"
 const _LIST_CARD_OBJECT_SCENE = preload(_LIST_CARD_OBJECT_SCENE_FILE)
+# The path to the DeckCardObject scene.
 const _DECK_CARD_OBJECT_SCENE_FILE = CFConst.PATH_CORE\
 		+ "/Deckbuilder/DBDeckCardObject.tscn"
 const _DECK_CARD_OBJECT_SCENE = preload(_DECK_CARD_OBJECT_SCENE_FILE)
+# The path to the CategoryScene scene.
 const _DECK_CATEGORY_SCENE_FILE = CFConst.PATH_CORE\
 		+ "/Deckbuilder/CategoryContainer.tscn"
 const _DECK_CATEGORY_SCENE = preload(_DECK_CATEGORY_SCENE_FILE)
 
-onready var available_cards = $VBC/HBC/MC2/AvailableCards
-onready var deck_cards = $VBC/HBC/MC/CurrentDeck/CardsInDeck
-onready var deck_name = $VBC/HBC/MC/CurrentDeck/DeckNameEdit
+# This value temporary holds all discovered decks form the disk
+# between looking at the decks to load, and selecting one.
+var _load_decks_list := []
+
+onready var _available_cards = $VBC/HBC/MC2/AvailableCards/VBC
+onready var _deck_cards = $VBC/HBC/MC/CurrentDeck/CardsInDeck
+onready var _deck_name = $VBC/HBC/MC/CurrentDeck/DeckNameEdit
+onready var _deck_min_label = $VBC/HBC/MC/CurrentDeck/DeckDetails/CardCount
+onready var _load_button = $VBC/HBC/MC/CurrentDeck/Buttons/Load
 
 func _ready() -> void:
+	# This signal returns the load buttons' popup menu choice.
+	_load_button.get_popup().connect("index_pressed", self, "_load_deck")	
 	populate_available_cards()
 
+func _process(_delta: float) -> void:
+	# We keep updating the card count label with the amount of cards in the deck
+	var card_count = 0
+	for category in _deck_cards.get_children():
+		for card_object in category.get_node("CategoryCards").get_children():
+			card_count += card_object.quantity
+	_deck_min_label.text = str(card_count) + ' Cards'
+	if deck_minimum and deck_maximum:
+		_deck_min_label.text += ' (min ' + str(deck_minimum)\
+				+ ', max ' + str(deck_maximum) + ')'
+	elif deck_minimum:
+		_deck_min_label.text += ' (min ' + str(deck_minimum) + ')'
+	elif deck_maximum:
+		_deck_min_label.text += ' (max ' + str(deck_maximum) + ')'
+
+
+# Populates the list of available cards, with all defined cards in the game
 func populate_available_cards() -> void:
 	for card_def in cfc.card_definitions:
 		var list_card_object = _LIST_CARD_OBJECT_SCENE.instance()
-		available_cards.add_child(list_card_object)
+		_available_cards.add_child(list_card_object)
 		list_card_object.max_allowed = max_quantity
 		list_card_object.deckbuilder = self
 		list_card_object.setup(card_def)
 
+
+# Adds a card to the deck.
+# Ensures that the card is put under its own category for readability
 func add_new_card(card_name, category, value) -> DBDeckCardObject:
 	var category_container
-	if not deck_cards.has_node(category):
+	# If the category does not exist, we have to instance it.
+	# Categories are using the same card field as the card templates.
+	if not _deck_cards.has_node(category):
 		category_container = _DECK_CATEGORY_SCENE.instance()
 		category_container.name = category
-		deck_cards.add_child(category_container)
+		_deck_cards.add_child(category_container)
 		category_container.get_node("CategoryLabel").text = category
 	else:
-		category_container = deck_cards.get_node(category)
+		category_container = _deck_cards.get_node(category)
 	var category_cards_node = category_container.get_node("CategoryCards")
 	var deck_card_object = _DECK_CARD_OBJECT_SCENE.instance()
 	category_cards_node.add_child(deck_card_object)
 	deck_card_object.setup(card_name, value)
 	return(deck_card_object)
 
-
-func _on_Filter_text_changed(new_text: String) -> void:
-	pass # Replace with function body.
-
-
+# Triggered when the Save button is pressed.
+# Stores the deck in JSON format to the folder defined in CFConst.DECKS_PATH
 func _on_Save_pressed() -> void:
+	var cards_count = 0
 	var deck_dictionary := {
-		"name": deck_name.text,
+		"name": _deck_name.text,
 		"cards": {},
 	}
-	for category in deck_cards.get_children():
+	for category in _deck_cards.get_children():
 		for card_object in category.get_node("CategoryCards").get_children():
 			deck_dictionary.cards[card_object.card_name] = card_object.quantity
+			cards_count += card_object.quantity
+	deck_dictionary["total"] = cards_count
 	var dir = Directory.new()
 	if not dir.dir_exists(CFConst.DECKS_PATH):
 		dir.make_dir(CFConst.DECKS_PATH)
 	var file = File.new()
-	file.open(CFConst.DECKS_PATH + deck_name.text + '.json', File.WRITE)
+	file.open(CFConst.DECKS_PATH + _deck_name.text + '.json', File.WRITE)
 	file.store_string(JSON.print(deck_dictionary, '\t'))
 	file.close()
+
+
+# Triggered just after pressing the Load button.
+# Populates the menu options with one entry per available deck to load
+# from the decks that exist in CFConst.DECKS_PATH
+func _on_Load_about_to_show() -> void:
+	# We clear the temporary variable to ensure we don't just keep
+	# adding to it
+	_load_decks_list.clear()
+	# We need to clear the choices generated by previous presses.
+	_load_button.get_popup().clear()
+	var available_decks = CFUtils.list_files_in_directory(CFConst.DECKS_PATH)
+	var file = File.new()
+	for deck in available_decks:
+		file.open(CFConst.DECKS_PATH + deck, File.READ)
+		var data = JSON.parse(file.get_as_text())
+		file.close()
+		# We expect decks in JSON Dictionary format
+		# In the future we might support plaintext as well.
+		if typeof(data.result) == TYPE_DICTIONARY:
+			_load_decks_list.append(data.result)
+	# Each file has the dictionary ready to go for our choices list
+	# We format each choice label, to show some relevant info about each deck
+	for deck in _load_decks_list:
+		_load_button.get_popup().add_item(
+				deck.name + ' (' + str(deck.total) + ' cards)')
+
+
+# Triggered when a deck has been chosen from the Load menu
+# Populates the Current Deck Details with the contents of the chosen deck
+# as they were stored to disk.
+func _load_deck(index: int) -> void:
+	# We need to zero all available cards, 
+	# otherwise previous selections will not be wiped if they're not in the deck
+	for list_card_object in _available_cards.get_children():
+		list_card_object.quantity = 0
+	# Since our temp deck list is an array, we can match the index of the
+	# menu choice, with the index in the array
+	var deck = _load_decks_list[index]
+	_deck_name.text = deck.name
+	for card_name in deck.cards:
+		# Our Current Deck quantities are always populated via the
+		# ListCardObjects. So we need to modify those in order to update the
+		# deck itself and connect the objects correctly.
+		for list_card_object in _available_cards.get_children():
+			if list_card_object.card_name == card_name:
+				list_card_object.quantity = deck.cards[card_name]
