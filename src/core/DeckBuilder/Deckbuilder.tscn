@@ -2,7 +2,7 @@
 
 [ext_resource path="res://fonts/Xolonium-Regular.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://fonts/Comfortaa-Bold.ttf" type="DynamicFontData" id=2]
-[ext_resource path="res://src/core/DeckBuilder/FilterButton.tscn" type="PackedScene" id=3]
+[ext_resource path="res://src/core/DeckBuilder/DBFilterLine.gd" type="Script" id=3]
 [ext_resource path="res://src/core/DeckBuilder/Deckbuilder.gd" type="Script" id=6]
 
 [sub_resource type="StyleBoxFlat" id=1]
@@ -148,30 +148,27 @@ margin_right = 628.0
 margin_bottom = 674.0
 size_flags_horizontal = 3
 
-[node name="Filter" type="LineEdit" parent="VBC/HBC/MC2/AvailableCards"]
+[node name="FilterLine" type="LineEdit" parent="VBC/HBC/MC2/AvailableCards"]
 margin_right = 628.0
 margin_bottom = 27.0
 custom_fonts/font = SubResource( 6 )
-text = "Filter the list"
+placeholder_text = "Filter the list"
+script = ExtResource( 3 )
 
-[node name="ButtonFilters" type="HBoxContainer" parent="VBC/HBC/MC2/AvailableCards"]
+[node name="CC" type="CenterContainer" parent="VBC/HBC/MC2/AvailableCards"]
 margin_top = 31.0
 margin_right = 628.0
-margin_bottom = 57.0
-
-[node name="CC" type="CenterContainer" parent="VBC/HBC/MC2/AvailableCards/ButtonFilters"]
-margin_right = 628.0
-margin_bottom = 26.0
+margin_bottom = 31.0
 size_flags_horizontal = 3
 
-[node name="FilterButton" parent="VBC/HBC/MC2/AvailableCards/ButtonFilters/CC" instance=ExtResource( 3 )]
-margin_left = 286.0
-margin_right = 341.0
+[node name="ButtonFilters" type="HBoxContainer" parent="VBC/HBC/MC2/AvailableCards/CC"]
+margin_left = 314.0
+margin_right = 314.0
 
 [node name="CardListHeaders" type="HBoxContainer" parent="VBC/HBC/MC2/AvailableCards"]
-margin_top = 61.0
+margin_top = 35.0
 margin_right = 628.0
-margin_bottom = 80.0
+margin_bottom = 54.0
 custom_constants/separation = 60
 
 [node name="Quantity" type="Label" parent="VBC/HBC/MC2/AvailableCards/CardListHeaders"]
@@ -196,16 +193,16 @@ custom_fonts/font = SubResource( 5 )
 text = "Type"
 
 [node name="LineSeparator" type="Panel" parent="VBC/HBC/MC2/AvailableCards"]
-margin_top = 84.0
+margin_top = 58.0
 margin_right = 628.0
-margin_bottom = 84.0
+margin_bottom = 58.0
 custom_styles/panel = SubResource( 4 )
 
 [node name="VBC" type="VBoxContainer" parent="VBC/HBC/MC2/AvailableCards"]
-margin_top = 88.0
+margin_top = 62.0
 margin_right = 628.0
-margin_bottom = 88.0
+margin_bottom = 62.0
 
 [connection signal="pressed" from="VBC/HBC/MC/CurrentDeck/Buttons/Save" to="." method="_on_Save_pressed"]
 [connection signal="about_to_show" from="VBC/HBC/MC/CurrentDeck/Buttons/Load" to="." method="_on_Load_about_to_show"]
-[connection signal="text_changed" from="VBC/HBC/MC2/AvailableCards/Filter" to="." method="_on_Filter_text_changed"]
+[connection signal="text_changed" from="VBC/HBC/MC2/AvailableCards/FilterLine" to="." method="_on_Filter_text_changed"]

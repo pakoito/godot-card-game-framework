@@ -7,6 +7,18 @@ export var max_quantity: int = 3
 export var deck_minimum: int = 52
 # The maximum amount cards required in a deck
 export var deck_maximum: int = 60
+# Set a property name defined in the cards. The deckbuilder will provide
+# one button per distinct property of that name
+# it discovers in your card base. This buttons can be toggled on/off
+# for quick filtering
+# 
+# Only supports string properties. No tags or integers. Also, all cards
+# Should have some value in this property. It is suggested this functionality
+# is only used on properties with few distinct values.
+# 
+# Also, if more than 8 distrinct properties are found, this functionality
+# will be skipped.
+export var filter_button_properties := ["Type"]
 # The path to the ListCardObject scene. This has to be defined explicitly
 # here, in order to use it in its preload, otherwise the parser gives an error
 const _LIST_CARD_OBJECT_SCENE_FILE = CFConst.PATH_CORE\
@@ -20,6 +32,10 @@ const _DECK_CARD_OBJECT_SCENE = preload(_DECK_CARD_OBJECT_SCENE_FILE)
 const _DECK_CATEGORY_SCENE_FILE = CFConst.PATH_CORE\
 		+ "/Deckbuilder/CategoryContainer.tscn"
 const _DECK_CATEGORY_SCENE = preload(_DECK_CATEGORY_SCENE_FILE)
+# The path to the DBFilterButton scene.
+const _FILTER_BUTTON_SCENE_FILE = CFConst.PATH_CORE\
+		+ "/Deckbuilder/DBFilterButton.tscn"
+const _FILTER_BUTTON_SCENE = preload(_FILTER_BUTTON_SCENE_FILE)
 
 # This value temporary holds all discovered decks form the disk
 # between looking at the decks to load, and selecting one.
@@ -30,11 +46,26 @@ onready var _deck_cards = $VBC/HBC/MC/CurrentDeck/CardsInDeck
 onready var _deck_name = $VBC/HBC/MC/CurrentDeck/DeckNameEdit
 onready var _deck_min_label = $VBC/HBC/MC/CurrentDeck/DeckDetails/CardCount
 onready var _load_button = $VBC/HBC/MC/CurrentDeck/Buttons/Load
+onready var _filter_line = $VBC/HBC/MC2/AvailableCards/FilterLine
+onready var _filter_buttons = $VBC/HBC/MC2/AvailableCards/CC/ButtonFilters
 
 func _ready() -> void:
 	# This signal returns the load buttons' popup menu choice.
-	_load_button.get_popup().connect("index_pressed", self, "_load_deck")	
+	_load_button.get_popup().connect("index_pressed", self, "_load_deck")
 	populate_available_cards()
+	_filter_line.connect("filters_changed", self, "_apply_filters")
+	var total_unique_values: int
+	for button_property in filter_button_properties:
+		var unique_values := CFUtils.get_unique_values(button_property)
+		total_unique_values += unique_values.size()
+		# We want to avoid exceeding 8 buttons
+		if total_unique_values <= 8:
+			for value in CFUtils.get_unique_values(button_property):
+				var filter_button = _FILTER_BUTTON_SCENE.instance()
+				filter_button.setup(button_property, value)
+				filter_button.connect("pressed", self, "_on_filter_button_pressed")
+				_filter_buttons.add_child(filter_button)
+
 
 func _process(_delta: float) -> void:
 	# We keep updating the card count label with the amount of cards in the deck
@@ -80,6 +111,7 @@ func add_new_card(card_name, category, value) -> DBDeckCardObject:
 	category_cards_node.add_child(deck_card_object)
 	deck_card_object.setup(card_name, value)
 	return(deck_card_object)
+
 
 # Triggered when the Save button is pressed.
 # Stores the deck in JSON format to the folder defined in CFConst.DECKS_PATH
@@ -133,7 +165,7 @@ func _on_Load_about_to_show() -> void:
 # Populates the Current Deck Details with the contents of the chosen deck
 # as they were stored to disk.
 func _load_deck(index: int) -> void:
-	# We need to zero all available cards, 
+	# We need to zero all available cards,
 	# otherwise previous selections will not be wiped if they're not in the deck
 	for list_card_object in _available_cards.get_children():
 		list_card_object.quantity = 0
@@ -148,3 +180,29 @@ func _load_deck(index: int) -> void:
 		for list_card_object in _available_cards.get_children():
 			if list_card_object.card_name == card_name:
 				list_card_object.quantity = deck.cards[card_name]
+
+
+# evaluates all cards in available_cards against each filter returned by the 
+# FilterLine. Cards that don't match, are set invisible.
+func _apply_filters(active_filters: Array) -> void:
+	for card_object in _available_cards.get_children():
+		var set_visible = true
+		for filter in active_filters:
+			if not filter.assess_card_object(card_object):
+				set_visible = false
+		for property in filter_button_properties:
+			var active_button_values = []
+			for button in _filter_buttons.get_children():
+				if button.pressed and button.property == property:
+					active_button_values.append(button.value)
+			if not card_object.card_properties.get(property):
+				set_visible = false
+			elif not card_object.card_properties[property]\
+					in active_button_values:
+				set_visible = false
+		card_object.visible = set_visible
+
+
+# Simply calls _apply_filters()
+func _on_filter_button_pressed() -> void:
+	_apply_filters(_filter_line.get_active_filters())
